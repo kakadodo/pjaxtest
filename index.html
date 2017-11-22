@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>PJAX 實作</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+    crossorigin="anonymous">
+  <style>
+    #loading {
+      text-align: center;
+    }
+
+    #pjax_container {
+      width: 100%;
+      overflow: hidden;
+    }
+
+    #pjax_container .card {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-sm-4">
+        <div class="list-group pjax_navbar">
+          <a href="./page1.html" class="list-group-item list-group-item-action active">
+            第一頁
+          </a>
+          <a href="./page2.html" class="list-group-item list-group-item-action">第二頁</a>
+          <a href="./page3.html" class="list-group-item list-group-item-action">第三頁</a>
+          <a href="./page4.html" class="list-group-item list-group-item-action">第四頁</a>
+        </div>
+      </div>
+      <div class="col-sm-8">
+        <div id="loading">
+          <img src="http://datainflow.com/wp-content/uploads/2017/09/loader.gif" alt="loading">
+        </div>
+        <div id="pjax_container"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.pjax/2.0.1/jquery.pjax.min.js"></script>
+  <script>
+    function doPjax() {
+      $(document).pjax('.pjax_navbar a', '#pjax_container', {
+        fragment: '#pjax_container'
+      });
+      $(document).on('pjax:send', function () {
+        $('#pjax_container .card').hide();
+        $('#loading').stop().show();
+      })
+      $(document).on('pjax:complete', function () {
+        $('#loading').fadeOut('', function () {
+          $('#pjax_container .card').fadeIn();
+        });
+      })
+    }
+
+    function indexInit() {
+      $.pjax({
+        url: 'page1.html',
+        container: '#pjax_container',
+        fragment: '#pjax_container'
+      })
+      doPjax();
+    }
+
+    $('.pjax_navbar a').on('click', function () {
+      let path = location.pathname;
+      let elPath = "/pjaxtest" + $(this).attr('href').replace('.', '');
+      console.log(path, elPath);
+      if (elPath === path) {
+        return false;
+      } else {
+        doPjax();
+        $('.pjax_navbar a').removeClass('active');
+        $(this).addClass('active');
+      }
+    })
+    window.onpopstate = function () {
+      let path = location.pathname;
+      $('.pjax_navbar a').removeClass('active');
+      $('a[href="' + path + '"]').addClass('active');
+    }
+    indexInit();
+  </script>
+</body>
+
+</html>
